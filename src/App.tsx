@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import AddUser from './pages/addUser';
