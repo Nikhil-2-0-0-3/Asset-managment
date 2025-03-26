@@ -65,6 +65,30 @@ const UserTable = () => {
     };
   }, []);
 
+
+  const handleUnassignDevice = async (userId: string, deviceId: string) => {
+    try {
+      const updates = {};
+      
+      // Remove from user's assigned devices
+      updates[`users/${userId}/devices_assigned/${deviceId}`] = null;
+      
+      // Update device's status to available
+      updates[`devices/${deviceId}/assignedTo`] = null;
+      updates[`devices/${deviceId}/status`] = 'Available';
+
+      await update(ref(db), updates);
+      
+      // Refresh the page to show updated data
+    
+      return true;
+    } catch (error) {
+      console.error('Error unassigning device:', error);
+      setError('Failed to unassign device');
+      return false;
+    }
+  };
+
   const handleAssignDevice = async (userId: string, deviceId: string) => {
     try {
       const updates = {};
@@ -287,6 +311,7 @@ const UserTable = () => {
                               style={{ ...buttonStyle, backgroundColor: "#f44336", padding: "4px 8px" }}
                               onClick={() => {
                                 // Add unassign functionality here if needed
+                                handleUnassignDevice(user.uid,deviceId)
                               }}
                             >
                               Unassign
