@@ -172,7 +172,7 @@ const UserTable = () => {
                   <td colSpan={6} style={{ padding: "20px", backgroundColor: "#f9f9f9" }}>
                     <form onSubmit={(e) => handleSubmit(e, user.uid)} style={formStyle}>
                       <input
-                        type="text"
+                        type="date"
                         value={assignmentData.timePeriod}
                         onChange={(e) => setAssignmentData({ ...assignmentData, timePeriod: e.target.value })}
                         placeholder="Time Period"
