@@ -10,9 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "firebase": "^11.5.0",
+    "@mui/material": "^6.4.8",
     "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
+    "firebase": "^11.5.0",
     "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
