@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import Chatbot from '../components/chatbot';
 
 function AddUser() {
     const [showUserForm, setShowUserForm] = useState(false);
@@ -87,6 +88,8 @@ function AddUser() {
           <button type="submit">Submit</button>
         </form>
       )}
+
+      <Chatbot />
     </div>
   )
 }
