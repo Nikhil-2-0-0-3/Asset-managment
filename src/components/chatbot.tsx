@@ -29,38 +29,101 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 h-96 bg-white rounded-lg shadow-lg flex flex-col border border-gray-200">
-      <div className="flex-1 p-4 overflow-y-auto">
+    <div
+      style={{
+        position: "fixed",
+        bottom: "20px",
+        right: "20px",
+        width: "400px",
+        height: "500px",
+        backgroundColor: "#fff",
+        borderRadius: "10px",
+        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
+        display: "flex",
+        flexDirection: "column",
+        border: "1px solid #ccc",
+        zIndex: 1000,
+      }}
+    >
+      {/* Chat Window */}
+      <div
+        style={{
+          flex: 1,
+          padding: "20px",
+          overflowY: "auto",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
         {chat.map((msg, index) => (
           <div
             key={index}
-            className={`p-3 my-2 rounded-lg max-w-[75%] ${
-              msg.sender === "user"
-                ? "bg-blue-500 text-white self-end ml-auto"
-                : "bg-gray-100 text-gray-800"
-            }`}
+            style={{
+              padding: "12px",
+              margin: "10px 0",
+              borderRadius: "10px",
+              maxWidth: "75%",
+              alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
+              backgroundColor: msg.sender === "user" ? "#007BFF" : "#f1f1f1",
+              color: msg.sender === "user" ? "#fff" : "#333",
+              marginLeft: msg.sender === "user" ? "auto" : "0",
+              marginRight: msg.sender === "user" ? "0" : "auto",
+            }}
           >
             {msg.text}
           </div>
         ))}
         {loading && (
-          <div className="p-3 my-2 rounded-lg bg-gray-100 text-gray-800">
+          <div
+            style={{
+              padding: "12px",
+              margin: "10px 0",
+              borderRadius: "10px",
+              backgroundColor: "#f1f1f1",
+              color: "#333",
+            }}
+          >
             Loading...
           </div>
         )}
       </div>
 
-      <div className="flex p-4 border-t border-gray-300">
+      {/* Input Field and Send Button */}
+      <div
+        style={{
+          display: "flex",
+          padding: "15px",
+          borderTop: "1px solid #ccc",
+          backgroundColor: "#fff",
+        }}
+      >
         <input
           type="text"
-          className="flex-1 p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            outline: "none",
+            fontSize: "14px",
+          }}
           placeholder="Type a message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
         <button
           onClick={handleSend}
-          className="ml-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+          style={{
+            marginLeft: "10px",
+            backgroundColor: "#007BFF",
+            color: "#fff",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            border: "none",
+            cursor: "pointer",
+            transition: "background 0.3s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#0056b3")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#007BFF")}
         >
           Send
         </button>
