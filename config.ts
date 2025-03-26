@@ -1,6 +1,7 @@
 // src/firebase/config.ts
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getAuth } from 'firebase/auth';
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -21,3 +22,4 @@ const db = getDatabase(app);
 
 // Export the database reference
 export { db };
+export const auth = getAuth(app);
