@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import { ref, push, set } from 'firebase/database';
-import {db} from '../../config' // Make sure this path matches your Firebase config file
+import { db } from '../../config'; 
+import Chatbot from '../components/chatbot';  
+import UserList from './UserList';
+import { useNavigate } from 'react-router-dom';
 
 function AddUser() {
+  const navigate = useNavigate();
     const [showUserForm, setShowUserForm] = useState(false);
     const [showDeviceForm, setShowDeviceForm] = useState(false);
 
@@ -106,45 +110,53 @@ function AddUser() {
                 </form>
             )}
 
-            {showDeviceForm && (
-                <form onSubmit={handleDeviceSubmit}>
-                    <h3>Device Form</h3>
-                    <label>
-                        Device Name:
-                        <input type="text" name="deviceName" required />
-                    </label>
-                    <br />
-                    <label>
-                        Serial Number:
-                        <input type="text" name="serialNumber" required />
-                    </label>
-                    <br />
-                    <label>
-                        Specifications:
-                        <input type="text" name="specification" required />
-                    </label>
-                    <br />
-                    <label>
-                        Adding date:
-                        <input type="date" name="addDate" required />
-                    </label>
-                    <br />
-                    <label>
-                        Decommission Date:
-                        <input type="date" name="decommission" required />
-                    </label>
-                    <br />
-                    <label>
-                        Next Service Date:
-                        <input type="date" name="serviceDate" required />
-                    </label>
-                    <br />
-                    <button type="submit">Submit</button>
-                    <button type="button" onClick={() => setShowDeviceForm(false)}>Cancel</button>
-                </form>
-            )}
-        </div>
-    );
+      {showDeviceForm && (
+        <form onSubmit={(e) => { 
+          e.preventDefault(); 
+          console.log('Device form submitted'); 
+          setShowDeviceForm(false); 
+        }}>
+          <h3>Device Form</h3>
+          <label>
+            Device Name:
+            <input type="text" name="deviceName" required />
+          </label>
+          <br />
+          <label>
+            Serial Number:
+            <input type="text" name="serialNumber" required />
+          </label>
+          <br />
+          <label>
+            Specifications:
+            <input type="text" name="specification" required />
+          </label>
+          <br />
+          <label>
+            Adding date:
+            <input type="text" name="addDate" required />
+          </label>
+          <br />
+          
+          <label>
+            Decommision Date:
+            <input type="text" name="decommission" required />
+          </label>
+          <br />
+          <label>
+            Next Service Date:
+            <input type="text" name="serviceDate" required />
+          </label>
+          <br />
+          <button type="submit">Submit</button>
+        </form>
+      )}
+      <Chatbot/>
+      <button onClick={()=>{
+        navigate('/userlist')
+      }}></button>
+    </div>
+  )
 }
 
 export default AddUser;
