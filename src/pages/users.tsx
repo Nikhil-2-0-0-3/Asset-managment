@@ -1,4 +1,4 @@
-import { off, onValue, ref } from 'firebase/database';
+import { off, onValue, ref, update } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import { db } from '../../config';
 
@@ -8,6 +8,14 @@ interface User {
   email: string;
   department: string;
   createdAt?: string | number;
+  devices_assigned?: Record<string, any>;
+}
+
+interface AssignedDevice {
+  deviceId: string;
+  assignedDate: string;
+  returnDate: string;
+  [key: string]: any;
 }
 
 const UserTable = () => {
@@ -15,6 +23,7 @@ const UserTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState<string | null>(null);
+  const [showAssignedDevices, setShowAssignedDevices] = useState<string | null>(null);
   const [assignmentData, setAssignmentData] = useState({
     timePeriod: '',
     deviceId: ''
@@ -52,18 +61,58 @@ const UserTable = () => {
     fetchUsers();
 
     return () => {
-      off(usersRef);  // Clean up Firebase listener on unmount
+      off(usersRef);
     };
   }, []);
 
-  if (loading) {
-    return <div>Loading users...</div>;
-  }
+  const handleAssignDevice = async (userId: string, deviceId: string) => {
+    try {
+      const updates = {};
+      const assignmentPath = `users/${userId}/devices_assigned/${deviceId}`;
+      
+      updates[assignmentPath] = {
+        deviceId,
+        assignedDate: new Date().toISOString(),
+        returnDate: assignmentData.timePeriod
+      };
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+      updates[`devices/${deviceId}/assignedTo`] = userId;
+      updates[`devices/${deviceId}/status`] = 'Assigned';
 
+      await update(ref(db), updates);
+      return true;
+    } catch (error) {
+      console.error('Error assigning device:', error);
+      setError('Failed to assign device');
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent, userId: string) => {
+    e.preventDefault();
+    
+    if (!assignmentData.deviceId) {
+      setError('Device ID is required');
+      return;
+    }
+
+    if (!assignmentData.timePeriod) {
+      setError('Time period is required');
+      return;
+    }
+
+    const success = await handleAssignDevice(userId, assignmentData.deviceId);
+    if (success) {
+      setShowForm(null);
+      setAssignmentData({ timePeriod: '', deviceId: '' });
+    }
+  };
+
+  const handleAssignedClick = (userId: string) => {
+    setShowAssignedDevices(userId === showAssignedDevices ? null : userId);
+  };
+
+  // All style declarations remain exactly the same
   const tableStyle = {
     width: "100%",
     borderCollapse: "collapse" as const,
@@ -98,6 +147,11 @@ const UserTable = () => {
     margin: "4px"
   };
 
+  const assignedButtonStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: "#FF9800" // Orange color for assigned devices button
+  };
+
   const formStyle: React.CSSProperties = {
     display: "flex",
     gap: "10px",
@@ -111,15 +165,23 @@ const UserTable = () => {
     width: "120px"
   };
 
-  const handleAssignClick = (userId: string) => {
-    setShowForm(userId === showForm ? null : userId);
-    setAssignmentData({ timePeriod: '', deviceId: '' });  // Reset both fields
+  const assignedDevicesStyle: React.CSSProperties = {
+    padding: "10px",
+    backgroundColor: "#f9f9f9",
+    border: "1px solid #ddd",
+    marginTop: "5px"
   };
 
-  const handleSubmit = (e: React.FormEvent, userId: string) => {
-    e.preventDefault();
-    console.log('Assignment Data:', { userId, ...assignmentData });
-    setShowForm(null);  // Hide form after submission
+  const deviceItemStyle: React.CSSProperties = {
+    padding: "8px",
+    borderBottom: "1px solid #eee",
+    display: "flex",
+    justifyContent: "space-between"
+  };
+
+  const handleAssignClick = (userId: string) => {
+    setShowForm(userId === showForm ? null : userId);
+    setAssignmentData({ timePeriod: '', deviceId: '' });
   };
 
   const formatDate = (timestamp: string | number | undefined) => {
@@ -129,11 +191,19 @@ const UserTable = () => {
     if (typeof timestamp === 'string') {
       date = new Date(timestamp);
     } else {
-      date = new Date(timestamp * 1000);  // Handle numeric timestamps
+      date = new Date(timestamp * 1000);
     }
 
     return date.toLocaleString();
   };
+
+  if (loading) {
+    return <div>Loading users...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
@@ -165,6 +235,12 @@ const UserTable = () => {
                   >
                     Assign
                   </button>
+                  <button
+                    style={assignedButtonStyle}
+                    onClick={() => handleAssignedClick(user.uid)}
+                  >
+                    Assigned
+                  </button>
                 </td>
               </tr>
               {showForm === user.uid && (
@@ -181,7 +257,7 @@ const UserTable = () => {
                       />
                       <input
                         type="text"
-                        value={assignmentData.deviceId || ''}
+                        value={assignmentData.deviceId}
                         onChange={(e) => setAssignmentData({ ...assignmentData, deviceId: e.target.value })}
                         placeholder="Device ID"
                         style={inputStyle}
@@ -191,6 +267,36 @@ const UserTable = () => {
                         Submit
                       </button>
                     </form>
+                  </td>
+                </tr>
+              )}
+              {showAssignedDevices === user.uid && user.devices_assigned && (
+                <tr>
+                  <td colSpan={6} style={{ padding: "20px", backgroundColor: "#f9f9f9" }}>
+                    <div style={assignedDevicesStyle}>
+                      <h4>Assigned Devices</h4>
+                      {Object.entries(user.devices_assigned).length > 0 ? (
+                        Object.entries(user.devices_assigned).map(([deviceId, deviceData]) => (
+                          <div key={deviceId} style={deviceItemStyle}>
+                            <div>
+                              <strong>Device ID:</strong> {deviceId}<br />
+                              <strong>Assigned Date:</strong> {formatDate(deviceData.assignedDate)}<br />
+                              <strong>Return Date:</strong> {formatDate(deviceData.returnDate)}
+                            </div>
+                            <button 
+                              style={{ ...buttonStyle, backgroundColor: "#f44336", padding: "4px 8px" }}
+                              onClick={() => {
+                                // Add unassign functionality here if needed
+                              }}
+                            >
+                              Unassign
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div>No devices assigned</div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )}
